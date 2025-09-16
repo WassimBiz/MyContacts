@@ -1,0 +1,29 @@
+.register-container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;   
+  padding-bottom: 1000px;          
+  padding-left: 950px;         
+}
+
+.register-form {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.register-form input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+}
+
+.register-form button {
+  padding: 10px 12px;
+  border: 1px solid #111827;
+  background: #111827;
+  color: #ffffff;
+  border-radius: 10px;
+  cursor: pointer;
+}

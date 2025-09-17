@@ -1,42 +1,38 @@
 .contacts-container {
   max-width: 900px;
-  margin-left: auto;          /* pousse le bloc à droite */
-  margin-left: 750px;         /* petit décalage du bord droit */
-  padding-bottom: 1000px;          /* espace depuis le haut */
-  padding-left: 16px;
-  padding-right: 16px;
+  margin: 40px auto;   /* centre le bloc, + marge haute */
+  padding: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
 .contacts-form {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  justify-content: flex-end;  /* aligne le formulaire à droite */
+  justify-content: center;  /* centre le formulaire */
+  margin-bottom: 16px;
 }
 
 .contacts-form input {
   padding: 8px 10px;
   border: 1px solid #d1d5db;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 .contacts-form button {
   padding: 8px 12px;
-  border: 1px solid #111827;
+  border: none;
   background: #111827;
   color: #ffffff;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
 .contacts-table {
   width: 100%;
   border-collapse: collapse;
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
-  margin-top: 8px;
 }
 
 .contacts-table th,
@@ -49,8 +45,4 @@
 .contacts-table th {
   background: #f3f4f6;
   font-weight: 600;
-}
-
-.contacts-table tr:hover td {
-  background: #fafafa;
 }

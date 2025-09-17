@@ -1,16 +1,22 @@
 .register-container {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;   
-  padding-bottom: 1000px;          
-  padding-left: 950px;         
+  width: 100vw;
+  height: 100vh;
+  display: flex !important;
+  justify-content: center !important;  /* centré horizontal */
+  align-items: flex-start !important;  /* en haut */
+  padding-top: 80px;
+  background-color: #f9fafb;
 }
 
 .register-form {
   width: 320px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  padding: 24px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .register-form input {
@@ -21,7 +27,7 @@
 
 .register-form button {
   padding: 10px 12px;
-  border: 1px solid #111827;
+  border: none;
   background: #111827;
   color: #ffffff;
   border-radius: 10px;

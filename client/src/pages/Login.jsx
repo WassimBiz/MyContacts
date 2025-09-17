@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { apiFetch } from "../api";
 import "./Login.css";
 
 export default function Login() {
@@ -9,9 +10,8 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:4000/auth/login", {
+    const res = await apiFetch("/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
     if (res.ok) {
@@ -19,7 +19,8 @@ export default function Login() {
       localStorage.setItem("token", data.token);
       navigate("/contacts");
     } else {
-      alert("Login failed");
+      const err = await res.json().catch(() => ({}));
+      alert(err?.error?.message || "Login failed");
     }
   };
 
@@ -27,20 +28,12 @@ export default function Login() {
     <div className="login-container">
       <form className="login-form" onSubmit={handleSubmit}>
         <h2>Login</h2>
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
         <button type="submit">Login</button>
+        <p style={{textAlign:'center',marginTop:8}}>
+          Pas de compte ? <Link to="/register">Register</Link>
+        </p>
       </form>
     </div>
   );

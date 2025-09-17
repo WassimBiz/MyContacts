@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../api";
 import "./Contacts.css";
 
 export default function Contacts() {
@@ -7,92 +8,52 @@ export default function Contacts() {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
 
-  const token = localStorage.getItem("token");
-
   const fetchContacts = async () => {
-    const res = await fetch("http://localhost:4000/contacts", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await apiFetch("/contacts");
     if (res.ok) {
       const data = await res.json();
-      setContacts(Array.isArray(data.items) ? data.items : []);
+      setContacts(data.items || []);
     }
   };
 
-  useEffect(() => {
-    if (token) fetchContacts();
-  }, [token]);
+  useEffect(() => { fetchContacts(); }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:4000/contacts", {
+    const res = await apiFetch("/contacts", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
       body: JSON.stringify({ firstName, lastName, phone }),
     });
     if (res.ok) {
-      await fetchContacts();
-      setFirstName("");
-      setLastName("");
-      setPhone("");
+      setFirstName(""); setLastName(""); setPhone("");
+      fetchContacts();
     } else {
-      alert("Création impossible (vérifie les champs et le token).");
+      const err = await res.json().catch(() => ({}));
+      alert(err?.error?.message || "Create failed");
     }
   };
 
   return (
     <div className="contacts-container">
-      <h2>Contacts</h2>
-
       <form className="contacts-form" onSubmit={handleAdd}>
-        <input
-          placeholder="First Name"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          required
-        />
-        <input
-          placeholder="Last Name"
-          value={lastName}
-          onChange={(e) => setLastName(e.target.value)}
-          required
-        />
-        <input
-          placeholder="Phone (10–20)"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          minLength={10}
-          maxLength={20}
-          required
-        />
+        <input placeholder="First Name" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+        <input placeholder="Last Name" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+        <input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
         <button type="submit">Add Contact</button>
       </form>
 
       <table className="contacts-table">
         <thead>
-          <tr>
-            <th>Prénom</th>
-            <th>Nom</th>
-            <th>Téléphone</th>
-          </tr>
+          <tr><th>Prénom</th><th>Nom</th><th>Téléphone</th></tr>
         </thead>
         <tbody>
-          {contacts.length === 0 ? (
-            <tr>
-              <td colSpan="3">Aucun contact pour le moment.</td>
+          {contacts.map(c => (
+            <tr key={c.id || c._id}>
+              <td>{c.firstName}</td>
+              <td>{c.lastName}</td>
+              <td>{c.phone}</td>
             </tr>
-          ) : (
-            contacts.map((c) => (
-              <tr key={c.id || c._id}>
-                <td>{c.firstName}</td>
-                <td>{c.lastName}</td>
-                <td>{c.phone}</td>
-              </tr>
-            ))
-          )}
+          ))}
         </tbody>
       </table>
     </div>

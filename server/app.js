@@ -13,7 +13,7 @@ const app = express();
 const allowed = (process.env.CORS_ORIGIN || 'http://localhost:5173')
   .split(',')
   .map(s => s.trim());
-
+  
 app.use(cors({ origin: allowed }));
 app.use(express.json());
 

@@ -1,62 +1,26 @@
-const port = 4000;
-
-module.exports = {
-  openapi: '3.0.0',
+// Spec OpenAPI (export JSON)
+const swaggerSpec = {
+  openapi: '3.0.3',
   info: {
     title: 'MyContacts API',
     version: '1.0.0',
-    description: 'Auth (JWT) + Contacts CRUD'
+    description: 'Auth JWT + CRUD Contacts'
   },
   servers: [
-    { url: `http://localhost:${port}`, description: 'Local dev' }
+    { url: 'http://localhost:4000', description: 'Local dev' }
+    // { url: 'https://<ton-backend>.onrender.com', description: 'Production' }
   ],
   components: {
     securitySchemes: {
       bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }
     },
     schemas: {
-      Error: {
-        type: 'object',
-        properties: {
-          error: {
-            type: 'object',
-            properties: {
-              message: { type: 'string' },
-              status: { type: 'integer' },
-              details: { nullable: true }
-            }
-          }
-        }
-      },
-      UserPublic: {
+      User: {
         type: 'object',
         properties: {
           id: { type: 'string' },
           email: { type: 'string', format: 'email' },
           createdAt: { type: 'string', format: 'date-time' }
-        }
-      },
-      AuthRegisterRequest: {
-        type: 'object',
-        required: ['email', 'password'],
-        properties: {
-          email: { type: 'string', format: 'email' },
-          password: { type: 'string', minLength: 8 }
-        }
-      },
-      AuthLoginRequest: {
-        type: 'object',
-        required: ['email', 'password'],
-        properties: {
-          email: { type: 'string', format: 'email' },
-          password: { type: 'string' }
-        }
-      },
-      AuthLoginResponse: {
-        type: 'object',
-        properties: {
-          token: { type: 'string' },
-          user: { $ref: '#/components/schemas/UserPublic' }
         }
       },
       Contact: {
@@ -70,136 +34,103 @@ module.exports = {
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' }
         }
-      },
-      ContactCreate: {
-        type: 'object',
-        required: ['firstName', 'lastName', 'phone'],
-        properties: {
-          firstName: { type: 'string' },
-          lastName: { type: 'string' },
-          phone: { type: 'string', minLength: 10, maxLength: 20 }
-        }
-      },
-      ContactUpdate: {
-        type: 'object',
-        properties: {
-          firstName: { type: 'string' },
-          lastName: { type: 'string' },
-          phone: { type: 'string', minLength: 10, maxLength: 20 }
-        }
       }
     }
   },
+  security: [],
   paths: {
     '/health': {
-      get: {
-        summary: 'Healthcheck',
-        responses: {
-          200: { description: 'OK' }
-        }
-      }
+      get: { summary: 'Healthcheck', responses: { 200: { description: 'OK' } } }
     },
     '/auth/register': {
       post: {
         summary: 'Register',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': { schema: { $ref: '#/components/schemas/AuthRegisterRequest' } }
-          }
-        },
-        responses: {
-          201: { description: 'Created', content: { 'application/json': { schema: { $ref: '#/components/schemas/UserPublic' } } } },
-          400: { description: 'Bad Request', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
-          409: { description: 'Conflict', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
-        }
+        requestBody: { required: true, content: { 'application/json': { schema: {
+          type: 'object', required: ['email','password'],
+          properties: { email: {type:'string'}, password:{type:'string'} }
+        }}}},
+        responses: { 201: { description: 'Created' }, 409: { description: 'Conflict' } }
       }
     },
     '/auth/login': {
       post: {
         summary: 'Login',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': { schema: { $ref: '#/components/schemas/AuthLoginRequest' } }
-          }
-        },
-        responses: {
-          200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthLoginResponse' } } } },
-          401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
-        }
+        requestBody: { required: true, content: { 'application/json': { schema: {
+          type: 'object', required: ['email','password'],
+          properties: { email: {type:'string'}, password:{type:'string'} }
+        }}}},
+        responses: { 200: { description: 'OK' }, 401: { description: 'Unauthorized' } }
       }
     },
     '/me': {
       get: {
-        security: [{ bearerAuth: [] }],
         summary: 'Current user',
-        responses: {
-          200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/UserPublic' } } } },
-          401: { description: 'Unauthorized', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } }
-        }
+        security: [{ bearerAuth: [] }],
+        responses: { 200: { description: 'OK' }, 401: { description: 'Unauthorized' } }
       }
     },
     '/contacts': {
       get: {
-        security: [{ bearerAuth: [] }],
         summary: 'List contacts',
+        security: [{ bearerAuth: [] }],
         parameters: [
-          { in: 'query', name: 'q', schema: { type: 'string' } },
-          { in: 'query', name: 'limit', schema: { type: 'integer' } },
-          { in: 'query', name: 'offset', schema: { type: 'integer' } }
+          { name: 'q', in: 'query', schema: { type: 'string' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+          { name: 'offset', in: 'query', schema: { type: 'integer' } }
         ],
-        responses: {
-          200: { description: 'OK' },
-          401: { description: 'Unauthorized' }
-        }
+        responses: { 200: { description: 'OK' }, 401: { description: 'Unauthorized' } }
       },
       post: {
-        security: [{ bearerAuth: [] }],
         summary: 'Create contact',
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': { schema: { $ref: '#/components/schemas/ContactCreate' } }
+        security: [{ bearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: {
+          type: 'object', required: ['firstName','lastName','phone'],
+          properties: {
+            firstName: {type:'string'}, lastName:{type:'string'}, phone:{type:'string'}
           }
-        },
-        responses: {
-          201: { description: 'Created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Contact' } } } },
-          400: { description: 'Bad Request' },
-          401: { description: 'Unauthorized' }
-        }
+        }}}},
+        responses: { 201: { description: 'Created' }, 400: { description: 'Bad Request' }, 401: { description: 'Unauthorized' } }
       }
     },
     '/contacts/{id}': {
       patch: {
-        security: [{ bearerAuth: [] }],
         summary: 'Update contact',
-        parameters: [
-          { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
-        ],
-        requestBody: {
-          content: { 'application/json': { schema: { $ref: '#/components/schemas/ContactUpdate' } } }
-        },
-        responses: {
-          200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/Contact' } } } },
-          400: { description: 'Bad Request' },
-          401: { description: 'Unauthorized' },
-          404: { description: 'Not Found' }
-        }
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: { content: { 'application/json': { schema: {
+          type: 'object',
+          properties: { firstName:{type:'string'}, lastName:{type:'string'}, phone:{type:'string'} }
+        }}}},
+        responses: { 200: { description: 'OK' }, 400: { description: 'Bad Request' }, 401: { description: 'Unauthorized' }, 404: { description: 'Not Found' } }
       },
       delete: {
-        security: [{ bearerAuth: [] }],
         summary: 'Delete contact',
-        parameters: [
-          { in: 'path', name: 'id', required: true, schema: { type: 'string' } }
-        ],
-        responses: {
-          204: { description: 'No Content' },
-          400: { description: 'Bad Request' },
-          401: { description: 'Unauthorized' },
-          404: { description: 'Not Found' }
-        }
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: { 204: { description: 'No Content' }, 400: { description: 'Bad Request' }, 401: { description: 'Unauthorized' }, 404: { description: 'Not Found' } }
+      }
+    },
+    '/contacts/bulk': {
+      patch: {
+        summary: 'Bulk update contacts',
+        security: [{ bearerAuth: [] }],
+        requestBody: { required: true, content: { 'application/json': { schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['id','patch'],
+            properties: {
+              id: { type: 'string' },
+              patch: {
+                type: 'object',
+                properties: { firstName:{type:'string'}, lastName:{type:'string'}, phone:{type:'string'} }
+              }
+            }
+          }
+        }}}},
+        responses: { 200: { description: 'OK' }, 400: { description: 'Bad Request' }, 401: { description: 'Unauthorized' } }
       }
     }
   }
 };
+module.exports = swaggerSpec;

@@ -1,53 +1,25 @@
 require('dotenv').config();
-const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
-const swaggerUi = require('swagger-ui-express');
-const swaggerSpec = require('./swagger');
-const requireAuth = require('./middlewares/requireAuth');
+const app = require('./app');
 
-const authRoutes = require('./routes/auth.routes');
-const contactRoutes = require('./routes/contacts_routes');
+const PORT = process.env.PORT || 4000;
+const MONGO_URI = process.env.MONGO_URI;
 
-const app = express();
-const port = 4000; // fixé comme demandé
+if (!MONGO_URI) {
+  console.error('❌ Missing MONGO_URI in environment');
+  process.exit(1);
+}
 
-// Middlewares
-app.use(express.json());
-app.use(cors());
-
-// Healthcheck
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
-
-// Docs Swagger
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-// Routes
-app.use('/auth', authRoutes);
-app.get('/me', requireAuth, (req, res) => {
-  return res.json({ id: req.user.id, email: req.user.email });
-});
-app.use('/contacts', contactRoutes);
-
-// Handler d'erreurs JSON uniforme
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  const status = err.status || 500;
-  return res.status(status).json({
-    error: { message: err.message || 'Internal Server Error', status, details: err.details || null }
-  });
-});
-
-// Connexion DB + start
-mongoose.connect(process.env.MONGO_URI)
+mongoose
+  .connect(MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
-    app.listen(port, () => {
-      console.log(`🚀 Server running on http://localhost:${port}`);
-      console.log(`📚 Docs available at http://localhost:${port}/docs`);
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.log(`📚 Docs at http://localhost:${PORT}/docs`);
     });
   })
-  .catch((error) => {
-    console.error('❌ MongoDB connection error:', error.message);
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err.message);
     process.exit(1);
   });

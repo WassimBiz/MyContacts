@@ -2,28 +2,36 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-function isValidEmail(email = '') { return /.+@.+\..+/.test(email); }
+console.log('[ENV] JWT_SECRET is', process.env.JWT_SECRET ? 'OK' : 'MISSING'); // DEBUG
 
 async function registerUser(email, password) {
-  if (!isValidEmail(email)) throw Object.assign(new Error('Invalid email'), { status: 400 });
-  if (typeof password !== 'string' || password.length < 8) {
-    throw Object.assign(new Error('Password must be at least 8 chars'), { status: 400 });
+  if (!email || !password) {
+    throw { status: 400, message: 'Email and password required' };
   }
 
-  const exists = await User.findOne({ email: email.toLowerCase().trim() }).lean();
-  if (exists) throw Object.assign(new Error('Email already used'), { status: 409 });
+  const exists = await User.findOne({ email: (email || '').toLowerCase().trim() });
+  if (exists) throw { status: 409, message: 'Email already used' };
 
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await User.create({ email, passwordHash });
-  return user.toJSON(); // nettoyé par toJSON du modèle
+
+  // Retour simple (le controller génère le token)
+  return {
+    id: user._id.toString(),
+    email: user.email,
+    createdAt: user.createdAt
+  };
 }
 
 async function loginUser(email, password) {
+  if (!email || !password) {
+    throw { status: 400, message: 'Email and password required' };
+  }
   const user = await User.findOne({ email: (email || '').toLowerCase().trim() });
-  if (!user) throw Object.assign(new Error('Invalid credentials'), { status: 401 });
+  if (!user) throw { status: 401, message: 'Invalid credentials' };
 
   const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) throw Object.assign(new Error('Invalid credentials'), { status: 401 });
+  if (!ok) throw { status: 401, message: 'Invalid credentials' };
 
   const token = jwt.sign(
     { sub: user._id.toString(), email: user.email },
@@ -31,7 +39,14 @@ async function loginUser(email, password) {
     { expiresIn: '7d' }
   );
 
-  return { token, user: user.toJSON() };
+  return {
+    token,
+    user: {
+      id: user._id.toString(),
+      email: user.email,
+      createdAt: user.createdAt
+    }
+  };
 }
 
 module.exports = { registerUser, loginUser };

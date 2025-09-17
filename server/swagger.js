@@ -7,8 +7,8 @@ const swaggerSpec = {
     description: 'Auth JWT + CRUD Contacts'
   },
   servers: [
-    { url: 'http://localhost:4000', description: 'Local dev' }
-    // { url: 'https://<ton-backend>.onrender.com', description: 'Production' }
+    { url: 'https://mycontacts-0evt.onrender.com/api', description: 'Production' }
+
   ],
   components: {
     securitySchemes: {

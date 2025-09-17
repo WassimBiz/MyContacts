@@ -18,21 +18,21 @@ app.use(cors({ origin: allowed }));
 app.use(express.json());
 
 // Health
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // Swagger
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Auth
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 
 // Current user
-app.get('/me', requireAuth, (req, res) => {
+app.get('/api/me', requireAuth, (req, res) => {
   res.json({ id: req.user.id, email: req.user.email });
 });
 
 // Contacts (protégé)
-app.use('/contacts', contactsRoutes);
+app.use('/api/contacts', contactsRoutes);
 
 // Handler d'erreurs JSON
 // eslint-disable-next-line no-unused-vars
